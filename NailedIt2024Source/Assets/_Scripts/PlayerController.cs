@@ -14,7 +14,6 @@ public class PlayerController : MonoBehaviour
     private Rigidbody2D _rb;
     private float _walkDirection;
     private Vector2 _vel;
-    private bool _pastDir; // Indicates if the player was going right or not. True if he was moving right
 
 
     // Collision variables
