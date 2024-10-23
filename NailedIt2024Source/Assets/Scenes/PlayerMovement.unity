@@ -289,7 +289,11 @@ MonoBehaviour:
   decel: 100
   maxSpeed: 10
   maxFallSpeed: 20
+  jumpForce: 5
   feetPosition: {fileID: 1260275405}
+  groundLayer:
+    serializedVersion: 2
+    m_Bits: 64
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -438,7 +442,7 @@ GameObject:
   - component: {fileID: 563579148}
   - component: {fileID: 563579147}
   - component: {fileID: 563579146}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Ground
   m_TagString: Untagged
   m_Icon: {fileID: 0}

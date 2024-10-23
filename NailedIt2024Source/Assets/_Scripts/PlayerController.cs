@@ -16,10 +16,14 @@ public class PlayerController : MonoBehaviour
     private Rigidbody2D _rb;
     private float _walkDirection;
     private Vector2 _vel;
+    // Jump section -- To be modified by Fede Zanca Uomo Incredibilmente bello
+    [SerializeField] private float jumpForce;
+    private bool _isJumping;
 
 
     // Collision variables
     [SerializeField] private Transform feetPosition;
+    [SerializeField] private LayerMask groundLayer;
     private float _feetRayLen = 0.1f;
     private bool _onGround;
 
@@ -43,8 +47,11 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-
         _walkDirection = Input.GetAxisRaw("Horizontal");
+        // For the jump mechanism, do not set _isJumping = Input.GetButtonDown cause it won't work, source: trust me bro
+        if(Input.GetButtonDown("Jump")){
+            _isJumping = true;
+        }
     }
 
     void FixedUpdate(){
@@ -55,17 +62,29 @@ public class PlayerController : MonoBehaviour
 
     void HandleVerticalMovement(){
         _vel.y -= PhysicsManager.instance.GetGravity() * GameManager.instance.GetFixedElpased() * _inversMass;
-        RaycastHit2D groundHit = GroundCollision();
-        if(groundHit){
-            _vel.y = 0;
-            _onGround = true;
-            AlignWithGround(groundHit);
-        }
-        else{
-            _onGround = false;
+        if(_vel.y <= 0){
+            RaycastHit2D groundHit = GroundCollision();
+            if(groundHit){
+                _vel.y = 0;
+                _onGround = true;
+                AlignWithGround(groundHit);
+            }
+            else{
+                _onGround = false;
+            }
         }
 
+        HandleJump();
+
         _vel.y = Mathf.Max(_vel.y, -maxFallSpeed);
+    }
+
+    void HandleJump(){
+        if(_onGround && _isJumping){
+            _vel.y = jumpForce * _inversMass;
+            _onGround = false;
+        }
+        _isJumping = false;
     }
 
     void AlignWithGround(RaycastHit2D groundHit){
@@ -99,7 +118,7 @@ public class PlayerController : MonoBehaviour
     }
 
     RaycastHit2D GroundCollision(){
-        RaycastHit2D hit = Physics2D.Raycast(feetPosition.position, Vector2.down, _feetRayLen);
+        RaycastHit2D hit = Physics2D.Raycast(feetPosition.position, Vector2.down, _feetRayLen, groundLayer);
         return hit;
     }
 }
