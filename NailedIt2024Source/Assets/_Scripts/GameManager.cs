@@ -7,6 +7,7 @@ public class GameManager : MonoBehaviour
     public static GameManager instance;
 
     private float _elapsed;
+    private float _fixedElapsed;
 
     void Awake(){
         if (instance == null) {
@@ -20,7 +21,15 @@ public class GameManager : MonoBehaviour
         _elapsed = Time.deltaTime;
     }
 
+    void FixedUpdate(){
+        _fixedElapsed = Time.fixedDeltaTime;
+    }
+
     public float GetElapsed(){
         return _elapsed;
+    }
+
+    public float GetFixedElpased(){
+        return _fixedElapsed;
     }
 }

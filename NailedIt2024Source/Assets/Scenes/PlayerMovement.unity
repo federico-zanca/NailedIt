@@ -284,10 +284,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0d0a196a3880fe4f09f8df8f253e1f02, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mass: 1
-  accel: 60
-  decel: 70
+  mass: 0.5
+  accel: 90
+  decel: 100
   maxSpeed: 10
+  maxFallSpeed: 20
   feetPosition: {fileID: 1260275405}
 --- !u!1 &519420028
 GameObject:

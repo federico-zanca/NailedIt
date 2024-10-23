@@ -8,9 +8,11 @@ public class PlayerController : MonoBehaviour
 {
     // Movement variables
     [SerializeField] private float mass;
+    private float _inversMass;
     [SerializeField] private float accel;
     [SerializeField] private float decel;
     [SerializeField] private float maxSpeed;
+    [SerializeField] private float maxFallSpeed;
     private Rigidbody2D _rb;
     private float _walkDirection;
     private Vector2 _vel;
@@ -23,7 +25,7 @@ public class PlayerController : MonoBehaviour
 
     // Rendering variables
     private Renderer _renderer;
-    private float _halfSize;
+    private float _halfSizey;
 
     void Awake(){
         _rb = GetComponent<Rigidbody2D>();
@@ -33,52 +35,67 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         _walkDirection = 0.0f;
-        _halfSize = _renderer.bounds.size.y / 2;
+        _halfSizey = _renderer.bounds.size.y / 2;
         _vel = Vector2.zero;
         _onGround = false;
+        _inversMass = 1 / mass;
     }
 
     void Update()
     {
 
         _walkDirection = Input.GetAxisRaw("Horizontal");
+    }
 
-        // Checking collisions
-        _vel.y -= PhysicsManager.instance.GetGravity() * GameManager.instance.GetElapsed() / mass;
+    void FixedUpdate(){
+        HandleVerticalMovement();
+        HandleHorizontalMovement();
+        _rb.velocity = _vel;
+    }
+
+    void HandleVerticalMovement(){
+        _vel.y -= PhysicsManager.instance.GetGravity() * GameManager.instance.GetFixedElpased() * _inversMass;
         RaycastHit2D groundHit = GroundCollision();
         if(groundHit){
             _vel.y = 0;
             _onGround = true;
-            Vector3 pos = transform.position;
-            GameObject ground = groundHit.collider.gameObject;
-            pos.y = ground.transform.position.y + ground.GetComponent<Renderer>().bounds.size.y / 2 + _halfSize;
-            transform.position = pos;
+            AlignWithGround(groundHit);
+        }
+        else{
+            _onGround = false;
         }
 
+        _vel.y = Mathf.Max(_vel.y, -maxFallSpeed);
+    }
+
+    void AlignWithGround(RaycastHit2D groundHit){
+        Vector3 pos = transform.position;
+        GameObject ground = groundHit.collider.gameObject;
+        pos.y = ground.transform.position.y + ground.GetComponent<Renderer>().bounds.size.y / 2 + _halfSizey;
+        transform.position = pos;
+    }
+
+    void HandleHorizontalMovement(){
         if(_walkDirection > 0 && _vel.x < maxSpeed){
             if(_vel.x < 0){
                 _vel.x = 0;
             }
-            _vel.x = Mathf.Min(_vel.x + accel * GameManager.instance.GetElapsed() / mass, maxSpeed / mass);
+            _vel.x = Mathf.Min(_vel.x + accel * GameManager.instance.GetElapsed() * _inversMass, maxSpeed * _inversMass);
         }
         else if(_walkDirection < 0 && _vel.x > -maxSpeed){
             if(_vel.x > 0){
                 _vel.x = 0;
             }
-            _vel.x = Mathf.Max(_vel.x - accel * GameManager.instance.GetElapsed() / mass, -maxSpeed / mass);
+            _vel.x = Mathf.Max(_vel.x - accel * GameManager.instance.GetElapsed() * _inversMass, -maxSpeed * _inversMass);
         }
         else if(_walkDirection == 0){
             if(_vel.x < 0){
-                _vel.x = Mathf.Min(_vel.x + decel * GameManager.instance.GetElapsed() / mass, 0.0f);
+                _vel.x = Mathf.Min(_vel.x + decel * GameManager.instance.GetElapsed() * _inversMass, 0.0f);
             }
             else if(_vel.x > 0){
-                _vel.x = Mathf.Max(_vel.x - decel * GameManager.instance.GetElapsed() / mass, 0.0f);
+                _vel.x = Mathf.Max(_vel.x - decel * GameManager.instance.GetElapsed() * _inversMass, 0.0f);
             }
         }
-    }
-
-    void FixedUpdate(){
-        _rb.velocity = _vel;
     }
 
     RaycastHit2D GroundCollision(){
