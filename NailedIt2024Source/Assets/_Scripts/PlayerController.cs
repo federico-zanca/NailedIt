@@ -19,7 +19,8 @@ public class PlayerController : MonoBehaviour
     // Jump section -- To be modified by Fede Zanca Uomo Incredibilmente bello
     [SerializeField] private float jumpForce;
     private bool _isJumping;
-
+    [SerializeField] private float jumpTime;
+    private float _jumpTimeCounter;
 
     // Collision variables
     [SerializeField] private Transform feetPosition;
@@ -48,20 +49,15 @@ public class PlayerController : MonoBehaviour
     void Update()
     {
         _walkDirection = Input.GetAxisRaw("Horizontal");
-        // For the jump mechanism, do not set _isJumping = Input.GetButtonDown cause it won't work, source: trust me bro
-        if(Input.GetButtonDown("Jump")){
-            _isJumping = true;
-        }
+        HandleVerticalMovement(); // keep it here oppure a volte non jumpa e hai anche un bypass per fare salti a mezz'aria se clicchi spacebar fast enough
     }
 
     void FixedUpdate(){
-        HandleVerticalMovement();
         HandleHorizontalMovement();
-        _rb.velocity = _vel;
     }
 
     void HandleVerticalMovement(){
-        _vel.y -= PhysicsManager.instance.GetGravity() * GameManager.instance.GetFixedElpased() * _inversMass;
+        _vel.y -= PhysicsManager.instance.GetGravity() * GameManager.instance.GetFixedElapsed() * _inversMass;
         if(_vel.y <= 0){
             RaycastHit2D groundHit = GroundCollision();
             if(groundHit){
@@ -80,11 +76,23 @@ public class PlayerController : MonoBehaviour
     }
 
     void HandleJump(){
-        if(_onGround && _isJumping){
-            _vel.y = jumpForce * _inversMass;
+        if(_onGround && Input.GetButtonDown("Jump")){
+            _isJumping = true;
+            _jumpTimeCounter = jumpTime;
             _onGround = false;
         }
-        _isJumping = false;
+        if(Input.GetButton("Jump") && _isJumping){
+            if(_jumpTimeCounter > 0){
+                _vel.y = _inversMass * jumpForce;
+                _jumpTimeCounter -= GameManager.instance.GetElapsed();
+            } else {
+                _isJumping = false;
+            }
+        }
+        if(Input.GetButtonUp("Jump")){
+            _isJumping = false;
+        }
+        _rb.velocity = _vel;
     }
 
     void AlignWithGround(RaycastHit2D groundHit){

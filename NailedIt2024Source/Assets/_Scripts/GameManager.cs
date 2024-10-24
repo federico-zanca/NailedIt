@@ -29,7 +29,7 @@ public class GameManager : MonoBehaviour
         return _elapsed;
     }
 
-    public float GetFixedElpased(){
+    public float GetFixedElapsed(){
         return _fixedElapsed;
     }
 }
